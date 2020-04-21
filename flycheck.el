@@ -4345,10 +4345,8 @@ overlays."
     (`(,err) ;; A single error
      (flycheck-error-format-message-and-id err))
     (_ ;; Zero or multiple errors
-     (mapconcat
-      (lambda (err)
-        (flycheck-error-format-message-and-id err 'include-snippet))
-      errs "\n"))))
+     (mapconcat (lambda (err) (flycheck-error-format-message-and-id err t))
+                errs "\n"))))
 
 (defun flycheck-filter-overlays (overlays)
   "Get all Flycheck overlays from OVERLAYS, in original order."
@@ -5098,10 +5096,9 @@ node `(elisp)Displaying Messages' for more information.
 In the latter case, show messages in the buffer denoted by
 variable `flycheck-error-message-buffer'."
   (when (and errors (flycheck-may-use-echo-area-p))
-    (let ((messages (seq-map #'flycheck-error-format-message-and-id errors)))
-      (display-message-or-buffer (string-join messages "\n\n")
-                                 flycheck-error-message-buffer
-                                 'not-this-window)
+    (let* ((message (flycheck-help-echo-all-error-messages errors)))
+      (display-message-or-buffer
+       message flycheck-error-message-buffer 'not-this-window)
       ;; We cannot rely on `display-message-or-buffer' returning the right
       ;; window. See URL `https://github.com/flycheck/flycheck/issues/1643'.
       (-when-let ((buf (get-buffer flycheck-error-message-buffer)))
